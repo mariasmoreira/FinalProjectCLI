@@ -5,7 +5,7 @@
 """ Dependencies and imports """
 from typing import List, Dict, Any
 import sys
-import expstats as es
+import Scripts.expstats as es
 
 """ Command line interface for experimental statistics 
     Structure of the commands: firt argument is the command,
