@@ -18,6 +18,21 @@ Available commands include:
 
 - `report` - Generates a full report for one or more CSVs, saving it to a file
 
+# Installation
+
+```python
+git clone https://github.com/mariasmoreira/FinalProjectCLI
+cd FinalProjectCLI
+```
+
+(Optional) Create a virtual environment
+
+```python
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+``` 
+
 Usage example:
 ```python
 
