@@ -33,7 +33,7 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 ``` 
 
-Usage example:
+Usage example in the terminal:
 ```python
 
 python expcli.py generate_report ../FinalProjectCLI/examples/condA_P001.csv report.txt 
