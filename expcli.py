@@ -2,15 +2,35 @@
 # @Autor: Maria S. Moreira
 # @Data: 26/12/2025
 
-""" Dependencies and imports """
 from typing import List, Dict, Any
 import sys
+import argparse
 import expstats as es
 
+VERSION = "1.0.0"
+
+# Minimal argparse handling for global flags
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("-h", "--help", action="store_true", help="Mostra ajuda")
+parser.add_argument("-v", "--verbose", action="store_true", help="Modo detalhado")
+parser.add_argument("--version", action="version", version=f"expcli {VERSION}")
+
+# Parse only known flags; leave the rest in sys.argv
+args, unknown = parser.parse_known_args()
+
+if args.help:
+    print("Uso: python expcli.py <command> [<args>...]")
+    print("Comandos disponíveis: load_session, list_participants, summary, compare_groups, generate_report")
+    sys.exit(0)
+
+verbose = args.verbose
+if verbose:
+    print("[VERBOSE] Argumentos originais:", sys.argv)
+
 """ Command line interface for experimental statistics 
-    Structure of the commands: firt argument is the command,
+    Structure of the commands: first argument is the command,
     second argument is the path to the CSV file or directory,
-    third argument (if needed) is the output path for genereate_report command."""
+    third argument (if needed) is the output path for generate_report command."""
 
 if __name__ == "__main__": # Main entry point for the CLI
     print(len(sys.argv))  # Check number of arguments
@@ -86,3 +106,5 @@ if __name__ == "__main__": # Main entry point for the CLI
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)
+
+    
