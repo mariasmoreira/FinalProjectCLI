@@ -1,10 +1,10 @@
 
 from typing import List, Dict, Any
 import sys
-import Scripts.expstats as es
+import expstats as es
 
 sys.path.append('../FinalProjectCLI')
-import Scripts.expstats as es
+import expstats as es
 
 
 if __name__ == "__main__":
