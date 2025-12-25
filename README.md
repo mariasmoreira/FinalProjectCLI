@@ -21,5 +21,5 @@ Available commands include:
 Usage example:
 ```python
 
-python Scripts/expcli.py generate_report examples/condA_P001.csv reports/condA_P001.txt
+python expcli.py generate_report ../FinalProjectCLI/examples/condA_P001.csv report.txt 
 ``` 
