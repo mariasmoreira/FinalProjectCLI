@@ -95,29 +95,43 @@ def main() -> None:
 
     elif command == "summary":
         csv_path = sys.argv[2] if len(sys.argv) > 2 else default_datadir
-        summary = es.compute_summary(csv_path)
-        if summary is None:
-            print("Dados não encontrados.") # Handle no data case
-        elif len(sys.argv) < 3:
-            print("Uso: python expcli.py summary <csv_path>") # Check if the necessary arguments are provided
+        if not os.path.exists(csv_path):
+            print(f"Arquivo {csv_path} não encontrado.")
+            sys.exit(1)
+
+        try:    # Handle traceback for file not found or processing errors
+            summary = es.compute_summary(csv_path)
+        except FileNotFoundError as e:
+            print(e)
+            sys.exit(1)
+        except Exception as e:
+            print(f"Erro ao processar o CSV: {e}")
             sys.exit(1)
         
         print("Session summary:", summary)
     
     elif command == "compare_groups":
+        if len(sys.argv) < 4:
+            print("Uso: python expcli.py compare_groups <csv_paths_a> <csv_paths_b>") # Check if the necessary arguments are provided
+            sys.exit(1)
         csv_paths_a = sys.argv[2].split(",") # Cannot be configurated in config file due to multiple paths
         csv_paths_b = sys.argv[3].split(",") # Cannot be configurated in config file due to multiple paths
-        comparison = es.compare_groups(csv_paths_a, csv_paths_b)
-        if not csv_paths_a or not csv_paths_b:
-            print("Erro: ambos os grupos devem conter pelo menos um ficheiro.")
+        
+        for f in csv_paths_a + csv_paths_b:
+            if not os.path.exists(f):
+                print(f"Arquivo {f} não encontrado.")
+                sys.exit(1)
+       
+        try : 
+            comparison = es.compare_groups(csv_paths_a, csv_paths_b)
+        except FileNotFoundError as e:
+            print(e)
             sys.exit(1)
-        if comparison is None:
-            print("Dados não encontrados.") # Handle no data case
-        elif len(sys.argv) < 4:
-            print("Uso: python expcli.py compare_groups <csv_paths_a> <csv_paths_b>")
+        except Exception as e:
+            print(f"Erro ao comparar grupos: {e}")
             sys.exit(1)
-            
-        print("Group comparison:", comparison)
+
+        print("Comparação entre grupos:", comparison)
 
     elif command == "generate_report":
         if len(sys.argv) < 4: # Cannot be configurated in config file due to multiple paths
