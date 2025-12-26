@@ -1,0 +1,6 @@
+[paths] 
+default_datadir= "data/"
+
+[report]
+default_ext = "txt"
+include_summ = true 
