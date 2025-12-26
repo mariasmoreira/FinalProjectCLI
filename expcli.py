@@ -28,19 +28,19 @@ def main() -> None:
     verbose = args.verbose   # If verbose flag is set, print original arguments
 
     if args.help:  # If help flag is provided, show usage information
-    print("Uso: python expcli.py <command> [<args>...]")
-    print("Comandos disponíveis: list_participants, summary, compare_groups, generate_report")
-    print("Estrutura dos comandos : <command> <path_to_csv_or_directory> [<output_path>]")
-    print("Flags globais:")
-    print("  -h, --help     Mostra ajuda")
-    print("  -v, --verbose  Modo detalhado")
-    print("  --version      Mostra versão")
-    print("--config <path>  Especifica o caminho do arquivo de configuração (padrão: config.toml)")
-    sys.exit(0)
+        print("Uso: python expcli.py <command> [<args>...]")
+        print("Comandos disponíveis: list_participants, summary, compare_groups, generate_report")
+        print("Estrutura dos comandos : <command> <path_to_csv_or_directory> [<output_path>]")
+        print("Flags globais:")
+        print("  -h, --help     Mostra ajuda")
+        print("  -v, --verbose  Modo detalhado")
+        print("  --version      Mostra versão")
+        print("--config <path>  Especifica o caminho do arquivo de configuração (padrão: config.toml)")
+        sys.exit(0)
 
  
     if verbose:   # If verbose flag is set, print original arguments
-    print("[VERBOSE] Argumentos originais:", sys.argv)
+        print("[VERBOSE] Argumentos originais:", sys.argv)
 
     """Load configuration from TOML file"""
     config_path = "config.toml"
@@ -51,7 +51,7 @@ def main() -> None:
             sys.argv.pop(config_index)  # Remove --config from arguments
             sys.argv.pop(config_index)  # Remove config path from arguments
         else:
-            print("Erro: --config flag requires a path argument.")
+            print("Erro: --config flag necessita de um caminho.")
             sys.exit(1)   # Exit if no path is provided
 
     config = {}
@@ -65,7 +65,7 @@ def main() -> None:
                 print(f"Arquivo de configuração {config_path} não encontrado.")
                 sys.exit(1)  # Exit if config file is not found and --config was specified
 
-    default_datadir = config.get("paths", {}).get("default_datadir", "data/")
+    default_datadir = config.get("diretórios", {}).get("default_datadir", "data/")
     default_ext = config.get("report", {}).get("default_ext", "txt")
     include_summ = config.get("report", {}).get("include_summ", True)
 
@@ -73,28 +73,33 @@ def main() -> None:
    
     """Check and dispatch commands"""  
     if len(sys.argv) < 2:   # Ensure the minimum number of arguments
-        print("Usage: python expcli.py <command> [<args>...]")
+        print("Uso: python expcli.py <command> [<args>...]")
         sys.exit(1)
     
     command = sys.argv[1]  # First argument is the command
     """ if statements for each command """
     if command == "list_participants": # List participants command
-        path = sys.argv[2] if len(sys.argv) > 2 else default_datadir # Second argument is the path
-        participants = es.list_participants(path)
-        if participants is None:
-            print("No participants found.") # Handle no participants case
-        elif len(sys.argv) < 3:
-            print("Usage: python expcli.py list_participants <data_dir>") # Check if the necessary arguments are provided
+        if len(sys.argv) < 3:
+            print("Uso: python expcli.py list_participants <csv_path>") # Check if the necessary arguments are provided
             sys.exit(1)
+        path = sys.argv[2] if len(sys.argv) > 2 else default_datadir
+        participants = es.list_participants(path)
+        if not os.path.exists(path):
+            print(f"Diretório {path} não existe.")
+            sys.exit(1)
+        if not participants:
+            print("Nenhum participante encontrado.") # Handle no participants case
+            sys.exit(1)
+        for p in sorted(participants):
+            print(f"- {p}")
 
-        print(participants)
     elif command == "summary":
         csv_path = sys.argv[2] if len(sys.argv) > 2 else default_datadir
         summary = es.compute_summary(csv_path)
         if summary is None:
-            print("No data found.") # Handle no data case
+            print("Dados não encontrados.") # Handle no data case
         elif len(sys.argv) < 3:
-            print("Usage: python expcli.py summary <csv_path>") # Check if the necessary arguments are provided
+            print("Uso: python expcli.py summary <csv_path>") # Check if the necessary arguments are provided
             sys.exit(1)
         
         print("Session summary:", summary)
@@ -103,28 +108,42 @@ def main() -> None:
         csv_paths_a = sys.argv[2].split(",") # Cannot be configurated in config file due to multiple paths
         csv_paths_b = sys.argv[3].split(",") # Cannot be configurated in config file due to multiple paths
         comparison = es.compare_groups(csv_paths_a, csv_paths_b)
+        if not csv_paths_a or not csv_paths_b:
+            print("Erro: ambos os grupos devem conter pelo menos um ficheiro.")
+            sys.exit(1)
         if comparison is None:
-            print("No data found.") # Handle no data case
+            print("Dados não encontrados.") # Handle no data case
         elif len(sys.argv) < 4:
-            print("Usage: python expcli.py compare_groups <csv_paths_a> <csv_paths_b>")
+            print("Uso: python expcli.py compare_groups <csv_paths_a> <csv_paths_b>")
             sys.exit(1)
             
         print("Group comparison:", comparison)
 
     elif command == "generate_report":
         if len(sys.argv) < 4: # Cannot be configurated in config file due to multiple paths
-            print("Usage: python expcli.py generate_report <csv_path> <out_path>") # Check if the necessary arguments are provided
+            print("Uso: python expcli.py generate_report <csv_path> <out_path>") # Check if the necessary arguments are provided
             sys.exit(1)
 
         csv_path = sys.argv[2] if len(sys.argv) > 3 else f"report.{default_ext}"
         out_path = sys.argv[3] if len(sys.argv) > 3 else f"report.{default_ext}"
+        
 
+        
+        if not os.path.exists(csv_path):
+            print(f"Arquivo {csv_path} não encontrado.")
+            sys.exit(1)
+        if os.path.exists(out_path):
+            resp = input(f"O arquivo {out_path} já existe. Sobrescrever? (s/n): ")
+            if resp.lower() != "s":
+                print("Operação cancelada.")
+                sys.exit(0)
+        
         summary = es.compute_summary(csv_path)
         es.generate_report(summary, out_path)
-        print(f"Report generated at {out_path}")
+        print(f"Relatório gerado em {out_path}")
 
     else:
-        print(f"Unknown command: {command}")
+        print(f"Comando desconhecido: {command}")
         sys.exit(1)
 
 if __name__ == "__main__": 
