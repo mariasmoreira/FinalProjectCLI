@@ -82,15 +82,15 @@ def main() -> None:
         if len(sys.argv) < 3:
             print("Uso: python expcli.py list_participants <csv_path>") # Check if the necessary arguments are provided
             sys.exit(1)
-        path = sys.argv[2] if len(sys.argv) > 2 else default_datadir
+        path = sys.argv[2] if len(sys.argv) > 2 else default_datadir  
         participants = es.list_participants(path)
         if not os.path.exists(path):
-            print(f"Diretório {path} não existe.")
+            print(f"Diretório {path} não existe.")  # Handle directory not found case
             sys.exit(1)
         if not participants:
             print("Nenhum participante encontrado.") # Handle no participants case
             sys.exit(1)
-        for p in sorted(participants):
+        for p in sorted(participants):  # Print sorted list of participants
             print(f"- {p}")
 
     elif command == "summary":
@@ -117,12 +117,12 @@ def main() -> None:
         csv_paths_a = sys.argv[2].split(",") # Cannot be configurated in config file due to multiple paths
         csv_paths_b = sys.argv[3].split(",") # Cannot be configurated in config file due to multiple paths
         
-        for f in csv_paths_a + csv_paths_b:
+        for f in csv_paths_a + csv_paths_b:  # Check if all files exist
             if not os.path.exists(f):
                 print(f"Arquivo {f} não encontrado.")
                 sys.exit(1)
        
-        try : 
+        try :   #Handle traceback for file not found or processing errors
             comparison = es.compare_groups(csv_paths_a, csv_paths_b)
         except FileNotFoundError as e:
             print(e)
@@ -143,10 +143,10 @@ def main() -> None:
         
 
         
-        if not os.path.exists(csv_path):
+        if not os.path.exists(csv_path):  # Check if input CSV file exists
             print(f"Arquivo {csv_path} não encontrado.")
             sys.exit(1)
-        if os.path.exists(out_path):
+        if os.path.exists(out_path):  # If itput file exists, ask for overwrite confirmation
             resp = input(f"O arquivo {out_path} já existe. Sobrescrever? (s/n): ")
             if resp.lower() != "s":
                 print("Operação cancelada.")
@@ -160,5 +160,5 @@ def main() -> None:
         print(f"Comando desconhecido: {command}")
         sys.exit(1)
 
-if __name__ == "__main__": 
+if __name__ == "__main__": # Run the main function
     main()   
