@@ -1,4 +1,4 @@
-[![Python Versions](https://img.shields.io/badge/python-3.9-blue)]()
+[![Python Versions](https://img.shields.io/badge/python-3.9.13-blue)]()
 
 # FinalProjectCLI
 
@@ -10,7 +10,7 @@ It contains:
 - `expstats.py` – script with all the analysis functions including list-participants, summary, compare-groups and report commands.
 - Pasta `examples/` – 4 CSV files for testing, in the correct format.
 
-Available commands include:
+# Available commands include:
 
 - `list-participants` - Lists all participant IDs found in a CSV file or folder of CSVs
 
@@ -35,8 +35,35 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 ``` 
 
-Usage example in the terminal:
+# Usage example in the terminal:
 ```python
 
 python expcli.py generate_report ../FinalProjectCLI/examples/condA_P001.csv report.txt 
 ``` 
+
+# File Configuration
+
+This repository supports configuration via a TOML file, which enables users to define parameters such as the data directory and report extension.
+
+By default this is the current settings:
+
+```python
+[paths]
+default_datadir = "data/"
+
+[report]
+default_ext = "txt"
+include_summ = true
+```
+
+To change these settings you can use a different TOML file using the `--config` flag
+Example Usage:
+
+```python
+# Use default config.toml
+python expcli.py list_participants
+
+# Use a custom config file
+python expcli.py --config config_experiment.toml summary data/session1.csv
+``` 
+
