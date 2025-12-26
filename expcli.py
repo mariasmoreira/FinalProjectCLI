@@ -27,7 +27,13 @@ args, unknown = parser.parse_known_args()
 
 if args.help:  # If help flag is provided, show usage information
     print("Uso: python expcli.py <command> [<args>...]")
-    print("Comandos disponíveis: load_session, list_participants, summary, compare_groups, generate_report")
+    print("Comandos disponíveis: list_participants, summary, compare_groups, generate_report")
+    print("Estrutura dos comandos : <command> <path_to_csv_or_directory> [<output_path>]")
+    print("Flags globais:")
+    print("  -h, --help     Mostra ajuda")
+    print("  -v, --verbose  Modo detalhado")
+    print("  --version      Mostra versão")
+    print("--config <path>  Especifica o caminho do arquivo de configuração (padrão: config.toml)")
     sys.exit(0)
 
 verbose = args.verbose  
@@ -72,19 +78,6 @@ if __name__ == "__main__": # Main entry point for the CLI
         sys.exit(1)
     
     command = sys.argv[1]  # First argument is the command
-
-    if command == "load_session":
-        csv_path = sys.argv[2] if len(sys.argv) > 2 else default_datadir
-        session = es._read_csv(csv_path)
-        if session is None:
-            print("No data found.") # Handle no data case
-        elif len(sys.argv) < 3:
-            print("Usage: python expcli.py load_session <csv_path>") # Check if the necessary arguments are provided
-            sys.exit(1)
-
-        print("Session data:")
-        for key, value in session.items(): # for each key-value pair in session, print them
-            print(f"{key}: {value}")
 
     if command == "list_participants": # List participants command
         path = sys.argv[2] if len(sys.argv) > 2 else default_datadir # Second argument is the path
