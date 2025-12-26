@@ -17,15 +17,17 @@ VERSION = "1.0.0"
     third argument (if needed) is the output path for generate_report command."""
 
 # Minimal argparse handling for global flags
-parser = argparse.ArgumentParser(add_help=False)
-parser.add_argument("-h", "--help", action="store_true", help="Mostra ajuda")
-parser.add_argument("-v", "--verbose", action="store_true", help="Modo detalhado")
-parser.add_argument("--version", action="version", version=f"expcli {VERSION}")
-
+def main() -> None:
+    """Arguments parsing and command dispatching"""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("-h", "--help", action="store_true", help="Mostra ajuda")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Modo detalhado")
+    parser.add_argument("--version", action="version", version=f"expcli {VERSION}")
 # Parse only known flags
-args, unknown = parser.parse_known_args()
+    args, unknown = parser.parse_known_args() # Parse known arguments
+    verbose = args.verbose   # If verbose flag is set, print original arguments
 
-if args.help:  # If help flag is provided, show usage information
+    if args.help:  # If help flag is provided, show usage information
     print("Uso: python expcli.py <command> [<args>...]")
     print("Comandos disponíveis: list_participants, summary, compare_groups, generate_report")
     print("Estrutura dos comandos : <command> <path_to_csv_or_directory> [<output_path>]")
@@ -36,49 +38,46 @@ if args.help:  # If help flag is provided, show usage information
     print("--config <path>  Especifica o caminho do arquivo de configuração (padrão: config.toml)")
     sys.exit(0)
 
-verbose = args.verbose  
-if verbose:   # If verbose flag is set, print original arguments
+ 
+    if verbose:   # If verbose flag is set, print original arguments
     print("[VERBOSE] Argumentos originais:", sys.argv)
 
+    """Load configuration from TOML file"""
+    config_path = "config.toml"
+    if "--config" in sys.argv: # If config flag is provided, get the config path
+        config_index = sys.argv.index("--config")  # Find index of --config
+        if len(sys.argv) > config_index + 1:  # Check if there is a path after --config
+            config_path = sys.argv[config_index + 1]  # Get config path from arguments
+            sys.argv.pop(config_index)  # Remove --config from arguments
+            sys.argv.pop(config_index)  # Remove config path from arguments
+        else:
+            print("Erro: --config flag requires a path argument.")
+            sys.exit(1)   # Exit if no path is provided
 
-config_path = "config.toml"
-if "--config" in sys.argv: # If config flag is provided, get the config path
-    config_index = sys.argv.index("--config")  # Find index of --config
-    if len(sys.argv) > config_index + 1:  # Check if there is a path after --config
-        config_path = sys.argv[config_index + 1]  # Get config path from arguments
-        sys.argv.pop(config_index)  # Remove --config from arguments
-        sys.argv.pop(config_index)  # Remove config path from arguments
-    else:
-        print("Erro: --config flag requires a path argument.")
-        sys.exit(1)   # Exit if no path is provided
+    config = {}
+    if os.path.exists(config_path):  # Check if config file exists
+        with open(config_path, "rb") as f:
+            config = tomli.load(f)  # Load configuration from TOML file
+        if verbose:
+            print(f"[VERBOSE] Configuração carregada de {config_path}: {config}")
+        else:
+            if "--config" in sys.argv:
+                print(f"Arquivo de configuração {config_path} não encontrado.")
+                sys.exit(1)  # Exit if config file is not found and --config was specified
 
-config = {}
-if os.path.exists(config_path):  # Check if config file exists
-    with open(config_path, "rb") as f:
-        config = tomli.load(f)  # Load configuration from TOML file
-    if verbose:
-        print(f"[VERBOSE] Configuração carregada de {config_path}: {config}")
-    else:
-        if "--config" in sys.argv:
-            print(f"Arquivo de configuração {config_path} não encontrado.")
-            sys.exit(1)  # Exit if config file is not found and --config was specified
-
-default_datadir = config.get("paths", {}).get("default_datadir", "data/")
-default_ext = config.get("report", {}).get("default_ext", "txt")
-include_summ = config.get("report", {}).get("include_summ", True)
+    default_datadir = config.get("paths", {}).get("default_datadir", "data/")
+    default_ext = config.get("report", {}).get("default_ext", "txt")
+    include_summ = config.get("report", {}).get("include_summ", True)
 
 
-if __name__ == "__main__": # Main entry point for the CLI
-    print(len(sys.argv))  # Check number of arguments
-    for arg in sys.argv:
-        print(arg)    # Print each argument
-        
+   
+    """Check and dispatch commands"""  
     if len(sys.argv) < 2:   # Ensure the minimum number of arguments
         print("Usage: python expcli.py <command> [<args>...]")
         sys.exit(1)
     
     command = sys.argv[1]  # First argument is the command
-
+    """ if statements for each command """
     if command == "list_participants": # List participants command
         path = sys.argv[2] if len(sys.argv) > 2 else default_datadir # Second argument is the path
         participants = es.list_participants(path)
@@ -87,9 +86,8 @@ if __name__ == "__main__": # Main entry point for the CLI
         elif len(sys.argv) < 3:
             print("Usage: python expcli.py list_participants <data_dir>") # Check if the necessary arguments are provided
             sys.exit(1)
-        
-        print(participants)
 
+        print(participants)
     elif command == "summary":
         csv_path = sys.argv[2] if len(sys.argv) > 2 else default_datadir
         summary = es.compute_summary(csv_path)
@@ -100,7 +98,6 @@ if __name__ == "__main__": # Main entry point for the CLI
             sys.exit(1)
         
         print("Session summary:", summary)
-
     
     elif command == "compare_groups":
         csv_paths_a = sys.argv[2].split(",") # Cannot be configurated in config file due to multiple paths
@@ -130,4 +127,5 @@ if __name__ == "__main__": # Main entry point for the CLI
         print(f"Unknown command: {command}")
         sys.exit(1)
 
-    
+if __name__ == "__main__": 
+    main()   
